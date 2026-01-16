@@ -32,21 +32,21 @@ for(let i=0;i<enemyCount;i++){
 
 const keys = {};
 window.addEventListener('keydown', e=>{
-  keys[e.key] = true;
+  keys[e.key.toLowerCase()] = true;
   if(e.key === ' ') player.swordActive = true;
 });
 window.addEventListener('keyup', e=>{
-  keys[e.key] = false;
+  keys[e.key.toLowerCase()] = false;
   if(e.key === ' ') player.swordActive = false;
 });
 
 // Game loop
 function gameLoop(){
-  // Move player
-  if(keys['ArrowUp']) player.y -= speed;
-  if(keys['ArrowDown']) player.y += speed;
-  if(keys['ArrowLeft']) player.x -= speed;
-  if(keys['ArrowRight']) player.x += speed;
+  // Move player using WASD
+  if(keys['w']) player.y -= speed;
+  if(keys['s']) player.y += speed;
+  if(keys['a']) player.x -= speed;
+  if(keys['d']) player.x += speed;
 
   // Boundaries
   player.x = Math.max(0, Math.min(canvas.width-player.size, player.x));
@@ -75,27 +75,6 @@ function gameLoop(){
   }
 
   // Draw enemies
-  enemies.forEach(e=>{
-    ctx.fillStyle=e.color;
-    ctx.fillRect(e.x, e.y, e.size, e.size);
+  enemies.forEach
 
-    // Collision with sword
-    if(player.swordActive &&
-       player.x + player.size + player.swordLength > e.x &&
-       player.x + player.size < e.x + e.size &&
-       player.y + player.size/4 < e.y + e.size &&
-       player.y + player.size/4 + player.size/2 > e.y){
-      e.color='gray'; // Hit effect
-    } else {
-      e.color='green';
-    }
-  });
-
-  requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
-</script>
-</body>
-</html>
 
