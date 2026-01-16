@@ -1,117 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PvP Arena</title>
+  <title>AI Chat Room</title>
   <style>
-    body { margin:0; background:#111; display:flex; justify-content:center; align-items:center; height:100vh; }
-    canvas { background:#222; display:block; border:3px solid #555; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      margin:0;
+    }
+    #chat-container {
+      width:400px;
+      max-width:90%;
+      background:#222;
+      padding:20px;
+      border-radius:10px;
+      display:flex;
+      flex-direction:column;
+      height:500px;
+    }
+    #messages {
+      flex:1;
+      overflow-y:auto;
+      margin-bottom:10px;
+    }
+    .message {
+      padding:5px 10px;
+      margin:5px 0;
+      border-radius:5px;
+    }
+    .user { background:#4caf50; align-self:flex-end; }
+    .ai { background:#555; align-self:flex-start; }
+    #input-container {
+      display:flex;
+    }
+    #input-container input {
+      flex:1;
+      padding:10px;
+      border:none;
+      border-radius:5px 0 0 5px;
+      outline:none;
+    }
+    #input-container button {
+      padding:10px;
+      border:none;
+      background:#4caf50;
+      color:white;
+      border-radius:0 5px 5px 0;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
-<canvas id="game" width="800" height="500"></canvas>
+<div id="chat-container">
+  <div id="messages"></div>
+  <div id="input-container">
+    <input type="text" id="chat-input" placeholder="Type a message..."/>
+    <button id="send-btn">Send</button>
+  </div>
+</div>
+
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const messagesDiv = document.getElementById('messages');
+const input = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
 
-// Player
-const player = { x:100, y:400, size:30, color:'red', swordLength:40, swordActive:false, health:100 };
+// Simple AI responses
+const aiReplies = [
+  "Hello there!",
+  "How can I help you today?",
+  "That's interesting...",
+  "Tell me more!",
+  "I see.",
+  "Can you explain that?",
+  "I'm just a simple AI chat bot."
+];
 
-// AI
-const ai = { x:600, y:400, size:30, color:'blue', swordLength:40, swordActive:false, health:100 };
-
-// Arena
-const arena = { width:canvas.width, height:canvas.height };
-
-const keys = {};
-window.addEventListener('keydown', e => keys[e.key.toLowerCase()]=true);
-window.addEventListener('keyup', e => keys[e.key.toLowerCase()]=false);
-
-// Sword collision function
-function swordHit(attacker, target){
-  if(attacker.swordActive &&
-     attacker.x + attacker.size + attacker.swordLength > target.x &&
-     attacker.x + attacker.size < target.x + target.size &&
-     attacker.y + attacker.size/4 < target.y + target.size &&
-     attacker.y + attacker.size/4 + attacker.size/2 > target.y){
-       target.health -= 0.5; // damage per frame
-  }
+function addMessage(text, sender){
+  const msgDiv = document.createElement('div');
+  msgDiv.classList.add('message', sender);
+  msgDiv.textContent = text;
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// AI behavior
-function updateAI(){
-  // Move towards player
-  if(ai.x < player.x) ai.x += 2;
-  if(ai.x > player.x) ai.x -= 2;
-  if(ai.y < player.y) ai.y += 2;
-  if(ai.y > player.y) ai.y -= 2;
-
-  // Swing sword randomly when close
-  if(Math.abs(ai.x - player.x) < 50 && Math.abs(ai.y - player.y) < 50){
-    ai.swordActive = Math.random() < 0.5; // 50% chance to swing each frame
-  } else {
-    ai.swordActive = false;
-  }
+function userSend(){
+  const text = input.value.trim();
+  if(!text) return;
+  addMessage(text, 'user');
+  input.value = '';
+  
+  // AI reply after a short delay
+  setTimeout(()=>{
+    const reply = aiReplies[Math.floor(Math.random()*aiReplies.length)];
+    addMessage(reply, 'ai');
+  }, 500 + Math.random()*1000);
 }
 
-// Game loop
-function gameLoop(){
-  // Player movement
-  const speed = 5;
-  if(keys['w']) player.y -= speed;
-  if(keys['s']) player.y += speed;
-  if(keys['a']) player.x -= speed;
-  if(keys['d']) player.x += speed;
+sendBtn.addEventListener('click', userSend);
+input.addEventListener('keydown
 
-  // Jumping removed for arena simplicity
-  // Boundaries
-  player.x = Math.max(0, Math.min(arena.width - player.size, player.x));
-  player.y = Math.max(0, Math.min(arena.height - player.size, player.y));
-  ai.x = Math.max(0, Math.min(arena.width - ai.size, ai.x));
-  ai.y = Math.max(0, Math.min(arena.height - ai.size, ai.y));
-
-  // Update AI
-  updateAI();
-
-  // Sword hits
-  swordHit(player, ai);
-  swordHit(ai, player);
-
-  // Clear arena
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0,0,arena.width, arena.height);
-
-  // Draw player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-
-  // Draw player sword
-  if(player.swordActive){
-    ctx.fillStyle='silver';
-    ctx.fillRect(player.x + player.size, player.y + player.size/4, player.swordLength, player.size/2);
-  }
-
-  // Draw AI
-  ctx.fillStyle = ai.color;
-  ctx.fillRect(ai.x, ai.y, ai.size, ai.size);
-
-  // Draw AI sword
-  if(ai.swordActive){
-    ctx.fillStyle='lightblue';
-    ctx.fillRect(ai.x - ai.swordLength, ai.y + ai.size/4, ai.swordLength, ai.size/2);
-  }
-
-  // Draw health bars
-  ctx.fillStyle='red';
-  ctx.fillRect(20,20,player.health*2,20);
-  ctx.strokeStyle='white';
-  ctx.strokeRect(20,20,200,20);
-
-  ctx.fillStyle='blue';
-  ctx.fillRect(canvas.width-220,20,ai.health*2,20);
-  ctx.strokeStyle='white';
-  ctx.strokeRect(canvas.width-220,20,200,20);
-
-  //
 
 
 
