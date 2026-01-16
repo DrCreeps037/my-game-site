@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sword Battle.io</title>
+  <style>
+    body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    canvas { background: #222; display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="600" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    let x = 300, y = 200;
+    const size = 20;
+    const speed = 5;
+
+    // Key press handling
+    const keys = {};
+    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keyup', e => keys[e.key] = false);
+
+    function gameLoop() {
+      // Move player
+      if(keys['ArrowUp']) y -= speed;
+      if(keys['ArrowDown']) y += speed;
+      if(keys['ArrowLeft']) x -= speed;
+      if(keys['ArrowRight']) x += speed;
+
+      // Boundaries
+      x = Math.max(0, Math.min(canvas.width - size, x));
+      y = Math.max(0, Math.min(canvas.height - size, y));
+
+      // Draw
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'red';
+      ctx.fillRect(x, y, size, size);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
